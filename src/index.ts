@@ -2,6 +2,9 @@ import express, { Express, Request, Response } from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import cors from "cors"
+import { Chat } from "./types";
+
+const chats: Chat[] = []
 
 const app: Express = express()
 const server = createServer(app)
@@ -32,6 +35,12 @@ io.on('connection', (socket) => {
     })
     
     socket.emit('message', "Hello...")
+    
+    socket.on('chat', (chat: Chat) => {
+        console.log("Ada chat masuk")
+        chats.push(chat)
+        io.emit('chat', chat)
+    })
 });
 
 server.listen(port, () => {
