@@ -3,8 +3,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import cors from "cors"
 import { Chat } from "./types";
-
-const chats: Chat[] = []
+import { getAllChat, insertChat } from "./db";
 
 const app: Express = express()
 const server = createServer(app)
@@ -27,19 +26,27 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Express + TypeScript Server");
 });
 
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
     console.log('a user connected');
     
     socket.on('disconnect', () => {
         console.log("client disconnected")
     })
     
-    socket.emit('message', "Hello...")
+    socket.on('get-chats', async (fn: (chats: Chat[]) => void) => {
+        fn(await getAllChat())
+    })
     
-    socket.on('chat', (chat: Chat) => {
-        console.log("Ada chat masuk")
-        chats.push(chat)
-        io.emit('chat', chat)
+    socket.emit('init-chats', await getAllChat())
+    
+    socket.on('chat', async (chat: Chat) => {
+        try {
+            const newChat = await insertChat(chat)
+            io.emit('chat', newChat)
+        }
+        catch (e) {
+            console.log(e)
+        }
     })
 });
 

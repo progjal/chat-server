@@ -1,7 +1,8 @@
 export type Chat = {
-    id: string
-    userId: string
+    id: number
+    userId: number
     userName: string
     message: string
     date: Date
+    replyChatId?: number
 }
